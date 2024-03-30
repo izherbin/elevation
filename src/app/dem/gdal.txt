@@ -1,0 +1,33 @@
+Driver: GTiff/GeoTIFF
+Files: /geodata/srtm-250m/SRTM_NE_250m_3_0.tif
+Size is 10081, 2881
+Coordinate System is:
+GEOGCRS["WGS 84",
+    DATUM["World Geodetic System 1984",
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    ID["EPSG",4326]]
+Data axis to CRS axis mapping: 2,1
+Origin = (32.995833126940006,60.010416474650008)
+Pixel Size = (0.002083333330000,-0.002083333330000)
+Metadata:
+  AREA_OR_POINT=Area
+Image Structure Metadata:
+  INTERLEAVE=BAND
+Corner Coordinates:
+Upper Left  (  32.9958331,  60.0104165) ( 32d59'45.00"E, 60d 0'37.50"N)
+Lower Left  (  32.9958331,  54.0083332) ( 32d59'45.00"E, 54d 0'30.00"N)
+Upper Right (  53.9979164,  60.0104165) ( 53d59'52.50"E, 60d 0'37.50"N)
+Lower Right (  53.9979164,  54.0083332) ( 53d59'52.50"E, 54d 0'30.00"N)
+Center      (  43.4968748,  57.0093748) ( 43d29'48.75"E, 57d 0'33.75"N)
+Band 1 Block=10081x1 Type=Int16, ColorInterp=Gray
+  NoData Value=-32768

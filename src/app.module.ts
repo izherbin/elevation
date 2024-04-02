@@ -4,6 +4,7 @@ import { AppService } from './app.service'
 import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { DemModule } from './app/dem/dem.module'
+import { ElevationModule } from './app/elevation/elevation.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { DemModule } from './app/dem/dem.module'
     ConfigModule.forRoot({
       cache: true
     }),
-    DemModule
+    DemModule,
+    ElevationModule
   ],
   controllers: [AppController],
   providers: [AppService]

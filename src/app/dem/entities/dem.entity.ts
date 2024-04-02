@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Schema as MongooSchema } from 'mongoose'
+import { HydratedDocument } from 'mongoose'
 import { Region } from './tile.entity'
 
 export type DemDocument = HydratedDocument<Dem>
@@ -8,6 +8,9 @@ export type DemDocument = HydratedDocument<Dem>
 export class Dem {
   @Prop()
   directory: string
+
+  @Prop()
+  name: string
 
   @Prop()
   resolution: number
@@ -20,9 +23,6 @@ export class Dem {
 
   @Prop({ type: Region })
   region: Region
-
-  @Prop({ type: [{ type: MongooSchema.Types.ObjectId, ref: 'Tile' }] })
-  tiles: MongooSchema.Types.ObjectId[]
 }
 
 export const DemSchema = SchemaFactory.createForClass(Dem)

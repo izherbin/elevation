@@ -95,13 +95,14 @@ export class DemService {
   }
 
   async getDem(registerDemDto: RegisterDemDto): Promise<DemDocument> {
-    const { directory, resolution, demId } = registerDemDto
+    const { directory, name, resolution, demId } = registerDemDto
 
     let dem: DemDocument
 
     if (!demId) {
       dem = new this.demModel({
         resolution,
+        name,
         directory,
         region: {
           minLat: 90,

@@ -1,5 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Schema as MongooSchema } from 'mongoose'
+import {
+  HydratedDocument,
+  Types as MongooTypes
+  // Schema as MongooSchema
+} from 'mongoose'
+import { Dem } from './dem.entity'
 
 export type TileDocument = HydratedDocument<Tile>
 
@@ -23,8 +28,8 @@ export class Tile {
   @Prop()
   file: string
 
-  @Prop({ type: MongooSchema.Types.ObjectId, ref: 'Dem' })
-  dem: MongooSchema.Types.ObjectId
+  @Prop({ type: MongooTypes.ObjectId, ref: 'Dem' })
+  dem: Dem
 
   @Prop()
   width: number

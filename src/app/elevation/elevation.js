@@ -10,42 +10,39 @@ export async function setTrackElevation(track, dems, tiles) {
   const geotiff = await import('geotiff')
 
   const elevations = []
-  track.points.forEach(async (point) => {
-    const { lat, lon, alt } = point
 
-    if (!alt) {
-      const filename = chooseTile(lat, lon, dems, tiles)
-      if (!filename) {
-        console.log('No appropriate tile for lat: ', lat, 'lon:', lon)
-        return
-      }
-      elevations.push(
-        elevation(lat, lon, filename, geotiff).then((alt) => {
-          point.alt = alt
-        })
-      )
-    }
+  track.points.forEach(async (point) => {
+    elevations.push(elevationPoint(point, geotiff, dems, tiles))
   })
 
   track.notes.forEach(async (note) => {
-    const { lat, lon, alt } = note.point
-
-    if (!alt) {
-      const filename = chooseTile(lat, lon, dems, tiles)
-      if (!filename) {
-        console.log('No appropriate tile for lat: ', lat, 'lon:', lon)
-        return
-      }
-      elevations.push(
-        elevation(lat, lon, filename, geotiff).then((alt) => {
-          note.point.alt = alt
-        })
-      )
-    }
+    elevations.push(elevationPoint(note.point, geotiff, dems, tiles))
   })
 
   await Promise.allSettled(elevations)
   return
+}
+
+async function elevationPoint(point, geotiff, dems, tiles) {
+  const fromArrayBuffer = geotiff.fromArrayBuffer
+
+  const { lat, lon, alt } = point
+
+  const filename = !alt ? chooseTile(lat, lon, dems, tiles) : null
+  if (!filename) {
+    console.log('No appropriate tile for lat: ', lat, 'lon:', lon)
+    return
+  }
+
+  const file = fs.readFileSync(filename).buffer
+  const tiff = await fromArrayBuffer(file)
+  const image = await tiff.getImage()
+  const rasters = await image.readRasters()
+
+  const calculatedAlt = await elevation(lat, lon, image, rasters)
+  point.alt = calculatedAlt
+
+  fs.closeSync(fs.openSync(filename, 'r'))
 }
 
 function chooseTile(lat, lon, dems, tiles) {
@@ -65,13 +62,7 @@ function chooseTile(lat, lon, dems, tiles) {
   return null
 }
 
-async function elevation(lat, lon, filename, geotiff) {
-  const fromArrayBuffer = geotiff.fromArrayBuffer
-
-  const file = fs.readFileSync(filename).buffer
-  const tiff = await fromArrayBuffer(file)
-  const image = await tiff.getImage()
-
+async function elevation(lat, lon, image, rasters) {
   // Construct the WGS-84 forward and inverse affine matrices:
   const { ModelPixelScale: s, ModelTiepoint: t } = image.fileDirectory
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -104,14 +95,11 @@ async function elevation(lat, lon, filename, geotiff) {
   // console.log(`Pixel covers the following GPS area:`, gpsBBox)
 
   // Finally, retrieve the elevation associated with this pixel's geographic area:
-  const rasters = await image.readRasters()
   const { width, [0]: raster } = rasters
   const elev = raster[x + y * width]
   console.log(
     `The elevation  at (${lat.toFixed(6)},${lon.toFixed(6)}) is ${elev}m`
   )
-
-  fs.closeSync(fs.openSync(filename, 'r'))
 
   return elev
 }

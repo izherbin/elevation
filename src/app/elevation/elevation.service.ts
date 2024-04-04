@@ -16,7 +16,7 @@ export class ElevationService {
   ) {}
 
   async setElevation(track: Track) {
-    const dems = await this.demModel.find().sort({ resolution: -1 })
+    const dems = await this.demModel.find().sort({ resolution: 1 })
     const tiles = await this.tileModel.find()
 
     await setTrackElevation(track, dems, tiles)

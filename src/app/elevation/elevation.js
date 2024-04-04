@@ -9,40 +9,46 @@ function transform(a, b, M, roundToInt = false) {
 export async function setTrackElevation(track, dems, tiles) {
   const geotiff = await import('geotiff')
 
-  const elevations = []
+  const elevationPoint = setElevationPoint(geotiff, dems, tiles)
 
-  track.points.forEach(async (point) => {
-    elevations.push(elevationPoint(point, geotiff, dems, tiles))
-  })
+  for (let point of track.points) {
+    await elevationPoint(point)
+  }
 
-  track.notes.forEach(async (note) => {
-    elevations.push(elevationPoint(note.point, geotiff, dems, tiles))
-  })
+  for (let note of track.notes) {
+    await elevationPoint(note.point)
+  }
 
-  await Promise.allSettled(elevations)
   return
 }
 
-async function elevationPoint(point, geotiff, dems, tiles) {
+function setElevationPoint(geotiff, dems, tiles) {
   const fromArrayBuffer = geotiff.fromArrayBuffer
+  let filename, image, rasters
 
-  const { lat, lon, alt } = point
+  return async function (point) {
+    const start = new Date().getTime() //! Start time
+    const { lat, lon, alt } = point
 
-  const filename = !alt ? chooseTile(lat, lon, dems, tiles) : null
-  if (!filename) {
-    console.log('No appropriate tile for lat: ', lat, 'lon:', lon)
-    return
+    const newFilename = !alt ? chooseTile(lat, lon, dems, tiles) : null
+    if (!newFilename) {
+      console.log('No appropriate tile for lat: ', lat, 'lon:', lon)
+      return
+    }
+
+    if (filename !== newFilename) {
+      const file = fs.readFileSync(newFilename)
+      const tiff = await fromArrayBuffer(file.buffer)
+      image = await tiff.getImage()
+      rasters = await image.readRasters()
+      filename = newFilename
+    }
+
+    console.log('Tile chosen:', newFilename)
+    const calculatedAlt = await elevation(lat, lon, image, rasters)
+    point.alt = calculatedAlt
+    console.log('+', new Date().getTime() - start) //! End time
   }
-
-  const file = fs.readFileSync(filename).buffer
-  const tiff = await fromArrayBuffer(file)
-  const image = await tiff.getImage()
-  const rasters = await image.readRasters()
-
-  const calculatedAlt = await elevation(lat, lon, image, rasters)
-  point.alt = calculatedAlt
-
-  fs.closeSync(fs.openSync(filename, 'r'))
 }
 
 function chooseTile(lat, lon, dems, tiles) {
